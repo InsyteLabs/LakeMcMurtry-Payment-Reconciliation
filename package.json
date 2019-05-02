@@ -1,0 +1,22 @@
+{
+  "name": "lakemcmurtry-payment-reconciliation",
+  "version": "1.0.0",
+  "description": "Application to reconcile Strip payments with Checkfront bookings for LakeMcMurtry",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/InsyteLabs/LakeMcMurtry-Payment-Reconciliation.git"
+  },
+  "author": "Bryce Jech <bryce@brycejech.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/InsyteLabs/LakeMcMurtry-Payment-Reconciliation/issues"
+  },
+  "homepage": "https://github.com/InsyteLabs/LakeMcMurtry-Payment-Reconciliation#readme",
+  "dependencies": {
+    "csv-parse": "^4.4.1"
+  }
+}
