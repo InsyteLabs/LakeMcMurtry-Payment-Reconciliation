@@ -20,7 +20,7 @@ const stripeFile     = fs.readFileSync(path.resolve(__dirname, 'data', '2019-str
         checkfrontData = checkfrontData
             .map(row => new CheckfrontEvent(row))
             .filter(item => {
-                return !~[ 'login', 'setup', 'support' ].indexOf(item.event.toLowerCase());
+                return !~[ 'login', 'setup', 'support', 'xls' ].indexOf(item.event.toLowerCase());
             });
 
         // Group the checkfront data by event ID
