@@ -1,13 +1,11 @@
-﻿Date,Source,Class,Event,ID,Message
-5/1/19 9:39,Jared A - 206.246.21.115,EXPORT,XLS,log,Activity Log - April 01 - May 01 2019
-5/1/19 9:37,Jared A - 206.246.21.115,SETUP,UPDATE,Notifications,Updated email notification 12 (Annual Permit Confirmation)
-5/1/19 9:36,Jared A - 206.246.21.115,ACCOUNT,LOGIN,jared@lakemcmurtry.org,"Guthrie, OK, US"
-5/1/19 8:09,*Website - iPhone,PAYMENT,Stripe,FTQG-010519,Credit $50.00 (ch_1EVIBJ23S29tvb3A17miPSBu)
-5/1/19 8:09,*Website - iPhone,EMAIL,SENT,FTQG-010519,"laurie.curtis@durantisd.org, jared@lakemcmurtry.org, laura@lakemcmurtry.org, dawn@lakemcmurtry.org
-Lake McMurtry Reservation Confirmation"
-5/1/19 8:09,*droplet - iPhone,BOOKING,NEW,FTQG-010519,"Paid Item ID: 17, Referrer: www.lakemcmurtry.org"
-5/1/19 8:05,*Website - iPhone,BOOKING,TOS Agreed,FTQG-010519,"Time: Wed, 01 May 2019 08:05:40 -0500. IP: 99.203.29.122. Location: USA, ,  (37.750999450684, -97.821998596191)"
-5/1/19 8:05,*droplet - iPhone,BOOKING,PRE,FTQG-010519,Pre-booking 
-4/30/19 21:00,*Checkfront - iPad,EMAIL,SENT,XKQJ-180419,"heath880@gmail.com
-Lake McMurtry Reservation Reminder"
-4/30/19 17:04,*Website - iPhone,BOOKING,TOS Agreed,CQTS-300419,"Time: Tue, 30 Apr 2019 17:04:18 -0500. IP: 99.203.92.132. Location: USA, ,  (37.750999450684, -97.821998596191)"
+Date,Source,Class,Event,ID,Message
+05/01/19 09:39 AM,Jared A - 206.246.21.115,EXPORT,XLS,log,Activity Log - April 01 - May 01 2019
+05/01/19 09:37 AM,Jared A - 206.246.21.115,SETUP,UPDATE,Notifications,Updated email notification 12 (Annual Permit Confirmation)
+05/01/19 09:36 AM,Jared A - 206.246.21.115,ACCOUNT,LOGIN,jared@lakemcmurtry.org,"Guthrie, OK, US"
+05/01/19 08:09 AM,*Website - iPhone,PAYMENT,Stripe,FTQG-010519,Credit $50.00 (ch_1EVIBJ23S29tvb3A17miPSBu)
+05/01/19 08:09 AM,*Website - iPhone,EMAIL,SENT,FTQG-010519,"laurie.curtis@durantisd.org, jared@lakemcmurtry.org, laura@lakemcmurtry.org, dawn@lakemcmurtry.org Lake McMurtry Reservation Confirmation"
+05/01/19 08:09 AM,*droplet - iPhone,BOOKING,NEW,FTQG-010519,"Paid Item ID: 17, Referrer: www.lakemcmurtry.org"
+05/01/19 08:05 AM,*Website - iPhone,BOOKING,TOS Agreed,FTQG-010519,"Time: Wed, 01 May 2019 08:05:40 -0500. IP: 99.203.29.122. Location: USA, ,  (37.750999450684, -97.821998596191)"
+05/01/19 08:05 AM,*droplet - iPhone,BOOKING,PRE,FTQG-010519,Pre-booking
+04/30/19 09:00 PM,*Checkfront - iPad,EMAIL,SENT,XKQJ-180419,"heath880@gmail.com Lake McMurtry Reservation Reminder"
+04/30/19 05:04 PM,*Website - iPhone,BOOKING,TOS Agreed,CQTS-300419,"Time: Tue, 30 Apr 2019 17:04:18 -0500. IP: 99.203.92.132. Location: USA, ,  (37.750999450684, -97.821998596191)"
