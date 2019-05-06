@@ -6,12 +6,11 @@ function CheckfrontEvent(csvRow){
     this.class   = csvRow.Class;
     this.source  = csvRow.Source;
     this.message = csvRow.Message;
+    this.date    = csvRow.Date;
 
-    const date = new Date(csvRow.Date);
-
+    const date      = new Date(this.date);
     this.dateString = date.toString();
     this.timestamp  = date.getTime();
-    this.date       = csvRow.Date;
 
     return this;
 }
