@@ -3,7 +3,9 @@
 import Vue    from 'vue';
 import Router from 'vue-router';
 
-import Home from './views/Home.vue';
+import Home          from './views/Home.vue';
+import Bookings      from './views/Bookings.vue';
+import BookingDetail from './views/BookingDetail.vue';
 
 Vue.use(Router);
 
@@ -15,6 +17,17 @@ export default new Router({
             path: '/',
             name: 'home',
             component: Home
+        },
+        {
+            path: '/bookings',
+            name: 'bookings',
+            component: Bookings
+        },
+        {
+            path: '/bookings/:bookingId',
+            name: 'bookingDetail',
+            props: true,
+            component: BookingDetail
         },
         {
             path: '/about',
