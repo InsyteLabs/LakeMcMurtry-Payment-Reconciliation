@@ -30,6 +30,18 @@ module.exports = {
         }
         catch(e){ throw e }
     },
+    async getItem(id){
+        try{
+            const res = await axios({
+                method: 'get',
+                url: `${ conf.endpoint }/item/${ id }`,
+                responseType: 'json'
+            });
+
+            return res.data;
+        }
+        catch(e){ throw e }
+    },
     async getEvents(){
         try{
             const res = await axios({

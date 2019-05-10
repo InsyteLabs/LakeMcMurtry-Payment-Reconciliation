@@ -54,4 +54,10 @@ router.get('/items', async (req, res, next) => {
     return res.json(items);
 });
 
+router.get('/items/:id', async (req, res, next) => {
+    let item = await checkfrontClient.getItem(req.params.id);
+
+    return res.json(item.item);
+});
+
 module.exports = router;
