@@ -1,5 +1,6 @@
 <template lang="html">
     <div class="bookings container">
+        <h1>Bookings</h1>
         <table>
             <thead>
                 <tr>
