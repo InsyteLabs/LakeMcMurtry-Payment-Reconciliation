@@ -18,6 +18,14 @@ const api = {
             detail = await detail.json();
 
         return detail;
+    },
+    async getItems(){
+        const url = `${ apiPrefix }/items`;
+
+        let items = await fetch(url);
+            items = await items.json();
+
+        return items;
     }
 }
 
