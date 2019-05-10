@@ -10,7 +10,8 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
         bookings: [],
-        bookingDetails: []
+        bookingDetails: [],
+        items: []
     },
     getters: {
         bookings(state){
@@ -24,6 +25,12 @@ const store = new Vuex.Store({
         },
         bookingDetail: state => bookingId => {
             return state.bookingDetails.filter(booking => booking.bookingId == bookingId)[0];
+        },
+        items(state){
+            return state.items;
+        },
+        item: state => id => {
+            return state.items.filter(item => item.id === id)[0];
         }
     },
     mutations: {
@@ -50,6 +57,18 @@ const store = new Vuex.Store({
                 }
             }
             state.bookingDetails.push(detail);
+        },
+        addItem(state, item){
+            const existing = this.getters.item(item.id);
+
+            if(existing){
+                const idx = this.getters.items.indexOf(item);
+
+                if(idx >= 0){
+                    state.items.splice(idx, 1);
+                }
+            }
+            state.items.push(item);
         }
     },
     actions: {
@@ -66,10 +85,19 @@ const store = new Vuex.Store({
             const bookingDetail = await api.getBookingDetail(booking.id);
 
             commit('addBookingDetail', bookingDetail);
+        },
+        async loadItems({ commit }){
+            const items = await api.getItems();
+
+            items.forEach(item => {
+                commit('addItem', item);
+            });
         }
     }
 });
 
 store.dispatch('loadBookings');
+store.dispatch('loadItems');
+
 
 export default store;
