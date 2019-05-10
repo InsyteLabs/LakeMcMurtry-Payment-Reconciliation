@@ -24,4 +24,8 @@
     color: #2c3e50
     &.router-link-exact-active
       color: #42b983
+
+table
+    tr:nth-child(even)
+        background-color: rgba(gray, .15)
 </style>
