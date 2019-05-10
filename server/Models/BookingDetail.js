@@ -1,5 +1,7 @@
 'use strict';
 
+const padLeft = require('../lib/pad-left');
+
 function BookingDetail(checkFrontDetail){
 
     this.id        = checkFrontDetail.id;
@@ -10,8 +12,10 @@ function BookingDetail(checkFrontDetail){
     this.statusId  = checkFrontDetail.status_id;
 
     this.created   = new Date(checkFrontDetail.created_date * 1000);
-    this.startDate = new Date(checkFrontDetail.start_date * 1000);
-    this.endDate   = new Date(checkFrontDetail.end_date * 1000);
+    this.startDate = dateStringFromTime(checkFrontDetail.start_date * 1000);
+    // End date always seems to be set to 12:00AM the following, subtract 1 to make them match
+    // this.endDate   = dateStringFromTime(checkFrontDetail.end_date * 1000 - 1);
+    this.endDate   = dateStringFromTime(checkFrontDetail.end_date * 1000);
     this.checkin   = checkFrontDetail.checkin;
     this.checkout  = checkFrontDetail.checkout;
 
@@ -45,10 +49,57 @@ function BookingDetail(checkFrontDetail){
     this.items        = checkFrontDetail.items        || {};
     this.transactions = checkFrontDetail.transactions || {};
 
-    this.items = Object.keys(this.items).map(key => this.items[key]);
-    this.transactions = Object.keys(this.transactions).map(key => this.transactions[key]);
+    this.items = Object.keys(this.items)
+        .map(key => new BookingItem(this.items[key]));
+    this.transactions = Object.keys(this.transactions)
+        .map(key => new BookingTransaction(this.transactions[key]));
 
     return this;
+}
+
+function BookingItem(item){
+    this.id         = item.id;
+    this.categoryId = item.category_id;
+    this.statusId   = item.status_id;
+    this.name       = item.name;
+    this.sku        = item.sku;
+
+    this.event     = item.event;
+    this.startDate = dateStringFromTime(item.start_date * 1000);
+    this.endDate   = dateStringFromTime(item.end_date * 1000);
+
+    this.param       = item.param;
+    this.qty         = item.qty;
+    this.discount    = item.discount;
+    this.itemTotal   = item.item_total;
+    this.subTotal    = item.sub_total;
+    this.taxIncTotal = item.tax_inc_total;
+    this.taxTotal    = item.tax_total;
+    this.total       = item.total;
+
+    this.unit    = item.unit;
+    this.summary = item.summary;
+
+    return this;
+}
+
+function BookingTransaction(transaction){
+    this.id      = transaction.id;
+    this.date    = dateStringFromTime(transaction.date * 1000);
+    this.status  = transaction.status;
+    this.amount  = Number(transaction.amount);
+    this.gateway = transaction.gateway_id;
+
+    return this;
+}
+
+function dateStringFromTime(time){
+    const date = new Date(time),
+          year = date.getFullYear(),
+          month = padLeft(date.getMonth() + 1, 2, '0'),
+          day   = padLeft(date.getDate(), 2, '0');
+
+    return `${ month }/${ day }/${ year }`;
 }
 
 module.exports = BookingDetail;
