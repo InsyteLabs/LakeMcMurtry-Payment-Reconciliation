@@ -1,51 +1,121 @@
 <template lang="html">
     <div class="container booking-detail">
-        <h3 class="text-center">Booking Info</h3>
+        <div class="row">
+            <div class="col-6">
+                <div class="card">
+                    <h3 class="text-center">Booking Info</h3>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Booking ID</th>
+                                <td>{{ bookingId }}</td>
+                            </tr>
+                            <tr>
+                                <th>Start Date</th>
+                                <td>{{ detail.startDate }}</td>
+                            </tr>
+                            <tr>
+                                <th>End Date</th>
+                                <td>{{ detail.endDate }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>{{ detail.statusId }}</td>
+                            </tr>
+                            <tr>
+                                <th>Total</th>
+                                <td>${{ detail.total.toFixed(2) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Paid</th>
+                                <td>${{ detail.amountPaid.toFixed(2) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="card">
+                    <h3>Customer Info</h3>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Name</th>
+                                <td>{{ detail.customer.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ detail.customer.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phone</th>
+                                <td>{{ detail.customer.phone }}</td>
+                            </tr>
+                            <tr>
+                                <th>Address</th>
+                                <td>{{ detail.customer.address }}</td>
+                            </tr>
+                            <tr>
+                                <th>City</th>
+                                <td>{{ detail.customer.city }}</td>
+                            </tr>
+                            <tr>
+                                <th>State</th>
+                                <td>{{ detail.customer.state }}</td>
+                            </tr>
+                            <tr>
+                                <th>Zip</th>
+                                <td>{{ detail.customer.zip }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h3>Booking Items</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Booking ID</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
+                    <th>ID</th>
+                    <th>Name</th>
                     <th>Status</th>
                     <th>Total</th>
-                    <th>Paid</th>
+                    <th>Start</th>
+                    <th>End</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>{{ bookingId }}</td>
-                    <td>{{ detail.startDate }}</td>
-                    <td>{{ detail.endDate }}</td>
-                    <td>{{ detail.statusId }}</td>
-                    <td>${{ detail.total.toFixed(2) }}</td>
-                    <td>${{ detail.amountPaid.toFixed(2) }}</td>
+                <tr v-for="item in detail.items">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.statusId }}</td>
+                    <td>{{ item.itemTotal }}</td>
+                    <td>{{ item.startDate }}</td>
+                    <td>{{ item.endDate }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3>Customer Info</h3>
+        <h3>Transactions</h3>
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th>City</th>
-                    <th>State</th>
-                    <th>Zip</th>
+                    <th>Gateway</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>ID</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>{{ detail.customer.name }}</td>
-                    <td>{{ detail.customer.email }}</td>
-                    <td>{{ detail.customer.phone }}</td>
-                    <td>{{ detail.customer.address }}</td>
-                    <td>{{ detail.customer.city }}</td>
-                    <td>{{ detail.customer.state }}</td>
-                    <td>{{ detail.customer.zip }}</td>
+                <tr v-for="transaction in detail.transactions">
+                    <td>{{ transaction.gateway }}</td>
+                    <td>{{ transaction.status }}</td>
+                    <td>${{ Number(transaction.amount).toFixed(2) }}</td>
+                    <td>{{ transaction.date }}</td>
+                    <td>{{ transaction.id }}</td>
                 </tr>
             </tbody>
         </table>
@@ -77,5 +147,14 @@ export default {
 </script>
 
 <style lang="sass" scoped>
+
+.card
+    padding: 1.6rem 2.4rem
+
+    table
+        margin-bottom: 0
+
+        tr:last-child
+            border-bottom: none
 
 </style>
