@@ -6,6 +6,7 @@ import Router from 'vue-router';
 import Home          from './views/Home.vue';
 import Bookings      from './views/Bookings.vue';
 import BookingDetail from './views/BookingDetail.vue';
+import Items         from './views/Items';
 
 Vue.use(Router);
 
@@ -28,6 +29,11 @@ export default new Router({
             name: 'bookingDetail',
             props: true,
             component: BookingDetail
+        },
+        {
+            path: '/items',
+            name: 'items',
+            component: Items
         },
         {
             path: '/about',
