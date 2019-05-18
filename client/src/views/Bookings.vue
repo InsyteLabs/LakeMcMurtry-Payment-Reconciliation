@@ -4,6 +4,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Created</th>
                     <th>Start</th>
                     <th>End</th>
                     <th style="max-width: 150px">Summary</th>
@@ -17,6 +18,7 @@
             </thead>
             <tbody>
                 <tr v-for="booking in bookings">
+                    <td class="no-wrap">{{ formatDate(booking.created) }}</td>
                     <td>{{ booking.startDate }}</td>
                     <td>{{ booking.endDate }}</td>
                     <td class="summary"><div v-html="formatSummary(booking.summary)"></div></td>
@@ -37,6 +39,8 @@
 
 <script>
 'use strict';
+
+import { formatDate } from '../utilities';
 
 export default {
     name: 'bookings',
@@ -62,7 +66,8 @@ export default {
                 .join('<br>');
 
             return text;
-        }
+        },
+        formatDate
     }
 }
 </script>
@@ -72,4 +77,6 @@ export default {
 .container
     max-width: 1350px
 
+.no-wrap
+    white-space: nowrap
 </style>
