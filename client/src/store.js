@@ -77,8 +77,6 @@ const store = new Vuex.Store({
 
             bookings.forEach(booking => {
                 commit('addBooking', booking);
-
-                dispatch('loadBookingDetail', booking);
             });
         },
         async loadBookingDetail({ commit }, booking){
