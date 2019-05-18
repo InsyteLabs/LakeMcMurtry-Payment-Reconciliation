@@ -10,9 +10,7 @@ const checkfrontClient = require('./Http/CheckfrontClient'),
 router.get('/bookings', async (req, res, next) => {
     let bookings = await checkfrontClient.getBookings();
 
-    bookings = Object.keys(bookings['booking/index'])
-        .map(key => bookings['booking/index'][key])
-        .map(booking => new Booking(booking));
+    bookings = bookings.map(booking => new Booking(booking));
 
     return res.json(bookings);
 });
