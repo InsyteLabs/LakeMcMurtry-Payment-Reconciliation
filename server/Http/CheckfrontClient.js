@@ -84,6 +84,8 @@ async function getBookings(month, year, page=1, bookings=[]){
         const newBookings = Object.keys(res.data['booking/index'])
             .map(key => res.data['booking/index'][key]);
 
+        if(!newBookings.length) return bookings;
+
         const firstCreatedDate = new Date(newBookings[0].created_date * 1000);
         if(firstCreatedDate.getMonth() + 1 > month){
             bookings = [...bookings, ...newBookings];
