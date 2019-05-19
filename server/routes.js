@@ -11,9 +11,10 @@ router.get('/bookings', async (req, res, next) => {
     let { month, year } = req.query;
 
     if(!(month && year)){
-        const date  = new Date(),
-              month = date.getMonth() + 1,
-              year  = date.getFullYear();
+        const date  = new Date();
+        
+        month = date.getMonth() + 1;
+        year  = date.getFullYear();
     }
 
     let bookings = await checkfrontClient.getBookings(month, year);
