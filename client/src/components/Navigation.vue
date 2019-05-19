@@ -8,10 +8,13 @@
                     <router-link to="/" class="link">Home</router-link>
                 </li>
                 <li>
+                    <router-link to="/items" class="link">Items</router-link>
+                </li>
+                <li>
                     <router-link to="/bookings" class="link">Bookings</router-link>
                 </li>
                 <li>
-                    <router-link to="/items" class="link">Items</router-link>
+                    <router-link to="/stripe-settlement" class="link">Stripe Settlement</router-link>
                 </li>
             </ul>
         </div>

@@ -3,10 +3,11 @@
 import Vue    from 'vue';
 import Router from 'vue-router';
 
-import Home          from './views/Home.vue';
-import Bookings      from './views/Bookings.vue';
-import BookingDetail from './views/BookingDetail.vue';
-import Items         from './views/Items';
+import Home             from './views/Home.vue';
+import Bookings         from './views/Bookings.vue';
+import BookingDetail    from './views/BookingDetail.vue';
+import StripeSettlement from './views/StripeSettlement.vue';
+import Items            from './views/Items';
 
 Vue.use(Router);
 
@@ -39,6 +40,11 @@ export default new Router({
             path: '/items',
             name: 'items',
             component: Items
+        },
+        {
+            path: '/stripe-settlement',
+            name: 'stripe-settlement',
+            component: StripeSettlement
         }
     ]
 });
