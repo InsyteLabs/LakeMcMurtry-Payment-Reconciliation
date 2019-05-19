@@ -8,7 +8,15 @@ const checkfrontClient = require('./Http/CheckfrontClient'),
       Item             = require('./Models/Item');
 
 router.get('/bookings', async (req, res, next) => {
-    let bookings = await checkfrontClient.getBookings();
+    let { month, year } = req.query;
+
+    if(!(month && year)){
+        const date  = new Date(),
+              month = date.getMonth() + 1,
+              year  = date.getFullYear();
+    }
+
+    let bookings = await checkfrontClient.getBookings(month, year);
 
     bookings = bookings.map(booking => new Booking(booking));
 
