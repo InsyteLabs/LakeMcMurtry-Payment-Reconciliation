@@ -44,6 +44,5 @@ export default {
 
 <style lang="sass" scoped>
 
-.container
-    max-width: 1350px
+
 </style>
