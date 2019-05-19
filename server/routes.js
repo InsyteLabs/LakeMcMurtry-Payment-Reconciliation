@@ -55,9 +55,10 @@ router.get('/settlement', async (req, res, next) => {
 
     let bookings = await checkfrontClient.getBookings(month, year);
 
-    bookings = bookings.map(booking => new Booking(booking)).slice(0, 4)
+    bookings = bookings.map(booking => new Booking(booking)).slice(0,4);
 
-    const promises = [];
+    const promises     = [],
+          allTransactions = [];
 
     bookings.forEach(async booking => {
         promises.push(new Promise(async (resolve, reject) => {
@@ -66,31 +67,41 @@ router.get('/settlement', async (req, res, next) => {
             let transactions = Object.keys(detail.transactions).map(key => detail.transactions[key]),
                 items        = Object.keys(detail.items).map(key => detail.items[key]);
 
-            booking.items = items.map(item => {
-                return {
-                    id:         item.id,
-                    categoryId: item.category_id,
-                    category:   categoryMap[item.category_id],
-                    name:       item.name,
-                    status:     item.status_id,
-                    start:      new Date(item.start_date * 1000),
-                    end:        new Date(item.end_date   * 1000),
-                    quantity:   Number(item.qty),
-                    itemTotal:  Number(item.item_total),
-                    subTotal:   Number(item.sub_total),
-                    total:      Number(item.total)
-                }
-            });
+            const bookedItems      = new Set(),
+                  bookedCategories = new Set();
 
-            booking.transactions = transactions
+            transactions.forEach(transaction => {
+
+                items.forEach(item => {
+                    bookedItems.add(item.name);
+                    bookedCategories.add(categoryMap[item.category_id]);
+                });
+
+                allTransactions.push({
+                        id:             transaction.id,
+                        status:         transaction.status,
+                        date:           new Date(transaction.date * 1000),
+                        amount:         Number(transaction.amount),
+                        gateway:        transaction.gateway_id,
+                        bookingId:      booking.id,
+                        bookingCode:    booking.code,
+                        bookingStatus:  booking.statusId,
+                        bookingSummary: booking.summary,
+
+                        items:         [...bookedItems],
+                        multipleItems: bookedItems.size > 1,
+
+                        categories:         [...bookedCategories],
+                        multipleCategories: bookedCategories.size > 1
+                });
+            });
 
             resolve();
         }));
     });
 
     Promise.all(promises).then(() => {
-        console.log('DONE');
-        return res.json(bookings);
+        return res.json(allTransactions);
     }).catch(e => console.log(e));
 
 });
