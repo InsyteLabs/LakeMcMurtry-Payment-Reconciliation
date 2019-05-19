@@ -12,7 +12,7 @@ router.get('/bookings', async (req, res, next) => {
 
     if(!(month && year)){
         const date  = new Date();
-        
+
         month = date.getMonth() + 1;
         year  = date.getFullYear();
     }
@@ -34,29 +34,69 @@ router.get('/bookings/:id', async (req, res, next) => {
     return res.json(new BookingDetail(detail));
 });
 
+router.get('/settlement', async (req, res, next) => {
+
+    const itemsAvailable      = await checkfrontClient.getItems(),
+          categoriesAvailable = await checkfrontClient.getCategories();
+
+    const categoryMap = categoriesAvailable.reduce((map, cat) => {
+        map[cat.id] = cat.name;
+        return map;
+    }, {});
+
+    let { month, year } = req.query;
+
+    if(!(month && year)){
+        const date = new Date();
+
+        month = date.getMonth() + 1;
+        year  = date.getFullYear();
+    }
+
+    let bookings = await checkfrontClient.getBookings(month, year);
+
+    bookings = bookings.map(booking => new Booking(booking)).slice(0, 4)
+
+    const promises = [];
+
+    bookings.forEach(async booking => {
+        promises.push(new Promise(async (resolve, reject) => {
+            let detail = (await checkfrontClient.getBooking(booking.id)).booking;
+
+            let transactions = Object.keys(detail.transactions).map(key => detail.transactions[key]),
+                items        = Object.keys(detail.items).map(key => detail.items[key]);
+
+            booking.items = items.map(item => {
+                return {
+                    id:         item.id,
+                    categoryId: item.category_id,
+                    category:   categoryMap[item.category_id],
+                    name:       item.name,
+                    status:     item.status_id,
+                    start:      new Date(item.start_date * 1000),
+                    end:        new Date(item.end_date   * 1000),
+                    quantity:   Number(item.qty),
+                    itemTotal:  Number(item.item_total),
+                    subTotal:   Number(item.sub_total),
+                    total:      Number(item.total)
+                }
+            });
+
+            booking.transactions = transactions
+
+            resolve();
+        }));
+    });
+
+    Promise.all(promises).then(() => {
+        console.log('DONE');
+        return res.json(bookings);
+    }).catch(e => console.log(e));
+
+});
+
 router.get('/items', async (req, res, next) => {
     let items = (await checkfrontClient.getItems()).items;
-
-    items = Object.keys(items)
-        .map(key => new Item(items[key]))
-        // Sort by category, then by name
-        .sort((a, b) => {
-            if(a.category === b.category){
-                /*
-                    Pick and sort number-like names like "Site #1"
-                    Ensures that "Site #10" comes at the end, not right after
-                    "Site #1"
-                */
-                if(/[0-9]/.test(a.name) && /[0-9]/.test(b.name)){
-                    const aName = parseInt(a.name.replace(/\D/g, '')),
-                          bName = parseInt(b.name.replace(/\D/g, ''));
-
-                    return aName - bName;
-                }
-                return a.name > b.name ? 1 : -1;
-            }
-            return a.category > b.category ? 1 : -1;
-        });
 
     return res.json(items);
 });
