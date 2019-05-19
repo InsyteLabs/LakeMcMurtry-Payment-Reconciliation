@@ -3,8 +3,10 @@
 const apiPrefix = 'http://localhost:8000';
 
 const api = {
-    async getBookings(){
-        const url = `${ apiPrefix }/bookings`;
+    async getBookings(month, year){
+        let url = `${ apiPrefix }/bookings`;
+
+        if(month && year) url += `?month=${ month }&year=${ year }`;
 
         let bookings = await fetch(url);
             bookings = await bookings.json();
