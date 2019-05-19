@@ -95,7 +95,7 @@
                         <td>{{ transaction.id }}</td>
                         <td>{{ transaction.date }}</td>
                         <td>{{ transaction.status }}</td>
-                        <td>{{ transaction.amount }}</td>
+                        <td>${{ transaction.amount }}</td>
                         <td>{{ transaction.gateway }}</td>
                     </tr>
                 </tbody>
