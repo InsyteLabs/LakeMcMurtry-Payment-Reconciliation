@@ -62,23 +62,42 @@ async function getEvents(){
     ------------
     Recursively calls itself until all pages are consumed
 */
-async function getBookings(page=1, bookings=[]){
+async function getBookings(month, year, page=1, bookings=[]){
+
+    if(!(month && year)){
+        const date = new Date();
+
+        month = date.getMonth() + 1;
+        year  = date.getFullYear();
+    }
     try {
+
+        const reqDate  = new Date(`${ month }/01/${ year }`),
+              reqStamp = reqDate.getTime() / 1000;
+
         const res = await axios({
             method: 'get',
-            url: `${ conf.endpoint }/booking?created_date=${ '>1546322400' }&limit=250&page=${ page }`,
+            url: `${ conf.endpoint }/booking?created_date=${ '>' + reqStamp }&limit=250&page=${ page }`,
             responseType: 'json'
         });
 
         const newBookings = Object.keys(res.data['booking/index'])
             .map(key => res.data['booking/index'][key]);
 
+        const firstCreatedDate = new Date(newBookings[0].created_date * 1000);
+        if(firstCreatedDate.getMonth() + 1 > month){
+            bookings = [...bookings, ...newBookings];
+            return bookings.filter(booking => {
+                const createdMonth = (new Date(booking.created_date * 1000)).getMonth() + 1;
+
+                return createdMonth > month ? false : true;
+            });
+        }
+
         bookings = [...bookings, ...newBookings];
 
-        console.log(res.data.request);
-
         if(res.data.request.page < res.data.request.pages){
-            return await getBookings(res.data.request.page + 1, bookings);
+            return await getBookings(month, year, res.data.request.page + 1, bookings);
         }
 
         return bookings;
