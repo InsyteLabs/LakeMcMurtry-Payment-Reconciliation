@@ -68,7 +68,7 @@ const store = new Vuex.Store({
             const existing = this.getters.bookingDetail(detail.bookingId);
 
             if(existing){
-                const idx = this.getters.bookingDetails.indexOf(detail);
+                const idx = this.getters.bookingDetails.indexOf(existing);
 
                 if(idx >= 0){
                     state.bookingDetails.splice(idx, 1);
