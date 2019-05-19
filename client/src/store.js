@@ -31,6 +31,24 @@ const store = new Vuex.Store({
         },
         item: state => id => {
             return state.items.filter(item => item.id === id)[0];
+        },
+        transactions(state){
+            const transactions = [];
+
+            state.bookingDetails.forEach(booking => {
+                booking.transactions.forEach(transaction => {
+                    transactions.push({
+                        id:        transaction.id,
+                        bookingId: booking.id,
+                        date:      transaction.date,
+                        status:    transaction.status,
+                        amount:    `$${ transaction.amount.toFixed(2) }`,
+                        gateway:   transaction.gateway
+                    });
+                });
+            });
+
+            return transactions
         }
     },
     mutations: {
@@ -69,14 +87,22 @@ const store = new Vuex.Store({
                 }
             }
             state.items.push(item);
+        },
+        removeBookings(state){
+            state.bookings       = [];
+            state.bookingDetails = [];
         }
     },
     actions: {
-        async loadBookings({ commit, dispatch }){
-            const bookings = await api.getBookings();
+        async loadBookings({ commit, dispatch }, o={ month:'', year:'' }){
+            const bookings = await api.getBookings(o.month, o.year);
+
+            commit('removeBookings');
 
             bookings.forEach(booking => {
                 commit('addBooking', booking);
+
+                dispatch('loadBookingDetail', booking);
             });
         },
         async loadBookingDetail({ commit }, booking){
