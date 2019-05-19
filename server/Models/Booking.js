@@ -33,7 +33,7 @@ function Booking(checkFrontBooking){
 
 function _formatDate(str){
     if(!str) return '';
-    
+
     const date  = new Date(str),
           year  = date.getFullYear(),
           month = padLeft(date.getMonth() + 1, 2, '0'),
