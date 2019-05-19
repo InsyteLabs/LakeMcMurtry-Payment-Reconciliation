@@ -1,14 +1,20 @@
 <template>
     <div id="app">
-        <div id="nav">
-            <router-link to="/">Home</router-link> |
-            <router-link to="/bookings">Bookings</router-link> |
-            <router-link to="/items">Items</router-link>
-        </div>
-        <img alt="Vue logo" src="./assets/logo.png">
+        <Navigation></Navigation>
         <router-view/>
     </div>
 </template>
+
+<script>
+'use strict';
+
+import Navigation from '@/components/Navigation';
+
+export default {
+    name: 'app',
+    components: { Navigation }
+}
+</script>
 
 <style lang="sass">
 #app
@@ -18,14 +24,9 @@
     text-align: center
     color: #2c3e50
 
-#nav
-    padding: 30px
 
-    a
-        font-weight: bold
-        color: #2c3e50
-        &.router-link-exact-active
-            color: #42b983
+.container
+    max-width: 1350px
 
 table
     tr:nth-child(even)
