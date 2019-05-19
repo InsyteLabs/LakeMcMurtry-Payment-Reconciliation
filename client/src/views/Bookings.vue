@@ -1,6 +1,43 @@
 <template lang="html">
     <div class="bookings container">
         <h1>Bookings</h1>
+        <div class="row">
+            <div class="col-2">
+                <select id="month" v-model="month">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="col-2">
+                <select id="year" v-model="year">
+                    <option value="2012">2012</option>
+                    <option value="2013">2013</option>
+                    <option value="2014">2014</option>
+                    <option value="2015">2015</option>
+                    <option value="2016">2016</option>
+                    <option value="2017">2017</option>
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+            <div class="col-1">
+                <button @click="loadBookings" class="bg-green-dark text-yellow-light btn-block" id="filter-btn" type="button" role="button">FILTER</button>
+            </div>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -28,7 +65,7 @@
                     <td>${{ booking.total.toFixed(2) }}</td>
                     <td>${{ booking.paidTotal.toFixed(2) }}</td>
                     <td>
-                        <button @click="viewDetail(booking.id)" class="btn-block btn-primary" type="button" role="button">View</button>
+                        <button @click="viewDetail(booking.id)" class="btn-block bg-green-dark text-yellow-light" type="button" role="button">View</button>
                     </td>
                 </tr>
             </tbody>
@@ -42,14 +79,33 @@
 
 import { formatDate } from '../utilities';
 
+const date  = new Date(),
+      month = date.getMonth() + 1,
+      year  = date.getFullYear();
+
 export default {
     name: 'bookings',
+    data(){
+        return {
+            month,
+            year
+        }
+    },
     computed: {
         bookings(){
             return this.$store.getters.bookings;
+        },
+        transactions(){
+            return this.$store.getters.transactions;
         }
     },
     methods: {
+        loadBookings(){
+            this.$store.dispatch('loadBookings', {
+                month: this.month,
+                year:  this.year
+            });
+        },
         viewDetail(bookingId){
             this.$router.push({
                 name: 'bookingDetail',
@@ -74,9 +130,9 @@ export default {
 
 <style lang="sass" scoped>
 
-.container
-    max-width: 1350px
-
 .no-wrap
     white-space: nowrap
+
+#filter-btn
+    margin-top: 10px
 </style>
