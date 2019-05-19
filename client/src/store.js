@@ -37,12 +37,17 @@ const store = new Vuex.Store({
 
             state.bookingDetails.forEach(booking => {
                 booking.transactions.forEach(transaction => {
+
+                    const amount = transaction.status.toLowerCase() === 'refund'
+                        ? transaction.amount * -1
+                        : transaction.amount;
+
                     transactions.push({
                         id:        transaction.id,
                         bookingId: booking.id,
                         date:      transaction.date,
                         status:    transaction.status,
-                        amount:    `$${ transaction.amount.toFixed(2) }`,
+                        amount:    amount.toFixed(2),
                         gateway:   transaction.gateway
                     });
                 });
