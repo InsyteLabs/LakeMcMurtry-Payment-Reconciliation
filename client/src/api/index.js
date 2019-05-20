@@ -30,7 +30,9 @@ const api = {
         return items;
     },
     async getSettlement(month, year){
-        const url = `${ apiPrefix }/settlement`;
+        let url = `${ apiPrefix }/settlement`;
+
+        if(month && year) url += `?month=${ month }&year=${ year }`;
 
         let settlement = await fetch(url);
             settlement = await settlement.json();
