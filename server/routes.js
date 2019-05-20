@@ -55,7 +55,7 @@ router.get('/settlement', async (req, res, next) => {
 
     let bookings = await checkfrontClient.getBookings(month, year);
 
-    bookings = bookings.map(booking => new Booking(booking)).slice(0,4);
+    bookings = bookings.map(booking => new Booking(booking));
 
     const promises     = [],
           allTransactions = [];
@@ -107,7 +107,7 @@ router.get('/settlement', async (req, res, next) => {
 });
 
 router.get('/items', async (req, res, next) => {
-    let items = (await checkfrontClient.getItems()).items;
+    let items = await checkfrontClient.getItems();
 
     return res.json(items);
 });
