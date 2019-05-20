@@ -28,6 +28,14 @@ const api = {
             items = await items.json();
 
         return items;
+    },
+    async getSettlement(month, year){
+        const url = `${ apiPrefix }/settlement`;
+
+        let settlement = await fetch(url);
+            settlement = await settlement.json();
+
+        return settlement;
     }
 }
 
