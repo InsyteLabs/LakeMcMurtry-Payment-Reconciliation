@@ -1,45 +1,8 @@
 <template lang="html">
     <div class="bookings container">
-        <div class="row filter-row">
-            <div class="col-2 pr-0">
-                <select id="month" v-model="month">
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
-            </div>
-            <div class="col-2 pr-0">
-                <select id="year" v-model="year">
-                    <option value="2012">2012</option>
-                    <option value="2013">2013</option>
-                    <option value="2014">2014</option>
-                    <option value="2015">2015</option>
-                    <option value="2016">2016</option>
-                    <option value="2017">2017</option>
-                    <option value="2018">2018</option>
-                    <option value="2019">2019</option>
-                    <option value="2020">2020</option>
-                    <option value="2021">2021</option>
-                    <option value="2022">2022</option>
-                    <option value="2023">2023</option>
-                </select>
-            </div>
-            <div class="col-1 pr-0">
-                <button @click="loadBookings" class="bg-green-dark text-yellow-light btn-block" id="filter-btn" type="button" role="button">FILTER</button>
-            </div>
-        </div>
+        <month-year-filter @filter-change="loadBookings"></month-year-filter>
 
-
-        <h1>Showing {{ bookings.length }} bookings created in {{ months[selectedMonth] }} {{ year }}</h1>
+        <h1>Showing {{ bookings.length }} bookings created in {{ months[month] }} {{ year }}</h1>
         <div class="table-scroll mb-5">
             <table class="mb-0">
                 <thead>
@@ -76,7 +39,7 @@
         </div>
 
 
-        <h1>Showing {{ transactions.length }} transactions in {{ months[selectedMonth] }} {{ year }}</h1>
+        <h1>Showing {{ transactions.length }} transactions in {{ months[month] }} {{ year }}</h1>
         <div class="table-scroll">
             <table class="mb-0">
                 <thead>
@@ -108,19 +71,15 @@
 <script>
 'use strict';
 
-import { formatDate } from '../utilities';
-
-const date  = new Date(),
-      month = date.getMonth() + 1,
-      year  = date.getFullYear();
+import MonthYearFilter from '@/components/MonthYearFilter.vue';
+import { formatDate }  from '../utilities';
 
 export default {
     name: 'bookings',
     data(){
         return {
-            month,
-            selectedMonth: month,
-            year,
+            month: '',
+            year:  '',
             months: {
                 1:  'January',
                 2:  'February',
@@ -146,13 +105,13 @@ export default {
         }
     },
     methods: {
-        loadBookings(){
-            this.selectedMonth = this.month;
+        loadBookings(e){
+            const { month, year } = e;
 
-            this.$store.dispatch('loadBookings', {
-                month: this.month,
-                year:  this.year
-            });
+            this.month = month;
+            this.year  = year;
+
+            this.$store.dispatch('loadBookings', { month, year });
         },
         viewDetail(bookingId){
             this.$router.push({
@@ -172,7 +131,8 @@ export default {
             return text;
         },
         formatDate
-    }
+    },
+    components: { MonthYearFilter }
 }
 </script>
 
