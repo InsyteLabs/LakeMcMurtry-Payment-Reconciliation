@@ -9,9 +9,10 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
     state: {
-        bookings: [],
+        bookings:       [],
         bookingDetails: [],
-        items: []
+        items:          [],
+        settlement:     []
     },
     getters: {
         bookings(state){
@@ -25,6 +26,12 @@ const store = new Vuex.Store({
         },
         bookingDetail: state => bookingId => {
             return state.bookingDetails.filter(booking => booking.bookingId == bookingId)[0];
+        },
+        settlement(state){
+            return state.settlement;
+        },
+        settlementTransaction: state => id => {
+            return state.settlement.filter(transaction => transaction.id == id)[0];
         },
         items(state){
             return state.items;
@@ -81,6 +88,19 @@ const store = new Vuex.Store({
             }
             state.bookingDetails.push(detail);
         },
+        addSettlementTransaction(state, transaction){
+            const existing = this.getters.settlementTransaction(transaction.id);
+
+            if(existing){
+                const idx = this.getters.settlement.indexOf(existing);
+
+                if(idx >= 0){
+                    state.settlement.splice(idx, 1);
+                }
+            }
+
+            state.settlement.push(transaction);
+        },
         addItem(state, item){
             const existing = this.getters.item(item.id);
 
@@ -96,6 +116,9 @@ const store = new Vuex.Store({
         removeBookings(state){
             state.bookings       = [];
             state.bookingDetails = [];
+        },
+        removeSettlement(state){
+            state.settlement = [];
         }
     },
     actions: {
@@ -121,12 +144,20 @@ const store = new Vuex.Store({
             items.forEach(item => {
                 commit('addItem', item);
             });
+        },
+        async loadSettlement({ commit }, o={ month: '', year: '' }){
+            const settlement = await api.getSettlement(o.month, o.year);
+
+            commit('removeSettlement');
+
+            settlement.forEach(transaction => commit('addSettlementTransaction', transaction));
         }
     }
 });
 
 store.dispatch('loadBookings');
 store.dispatch('loadItems');
+store.dispatch('loadSettlement');
 
 
 export default store;
