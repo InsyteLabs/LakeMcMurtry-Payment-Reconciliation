@@ -138,9 +138,6 @@ export default {
 
 <style lang="sass" scoped>
 
-.no-wrap
-    white-space: nowrap
-
 #filter-btn
     margin-top: 10px
 

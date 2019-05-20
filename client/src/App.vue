@@ -25,6 +25,9 @@ export default {
     color: #2c3e50
 
 
+.no-wrap
+    white-space: nowrap
+    
 .container
     max-width: 1350px
 
