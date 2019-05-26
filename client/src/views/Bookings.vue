@@ -54,7 +54,9 @@
                 </thead>
                 <tbody>
                     <tr v-for="transaction of transactions" :class="{ refund: transaction.status === 'REFUND' }">
-                        <td>{{ transaction.bookingId }}</td>
+                        <td>
+                            <router-link :to="'/bookings/' + transaction.bookingId">{{ transaction.bookingId }}</router-link>
+                        </td>
                         <td>{{ transaction.id }}</td>
                         <td>{{ transaction.date }}</td>
                         <td>{{ transaction.status }}</td>
