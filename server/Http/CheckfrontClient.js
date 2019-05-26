@@ -3,7 +3,9 @@
 const axios = require('axios'),
       conf  = require('../conf').checkfront;
 
-const Item = require('../Models/Item');
+const Item          = require('../Models/Item'),
+      Booking       = require('../Models/Booking'),
+      BookingDetail = require('../Models/BookingDetail');
 
 axios.defaults.headers.common['Authorization'] = `Basic ${ conf.token }`;
 
@@ -74,6 +76,28 @@ async function getCategories(){
     return categories;
 }
 
+async function getItemsByCategory(){
+    const items = await getItems(),
+          cats  = [];
+
+    items.forEach(item => {
+        const existing = cats.filter(cat => cat.id === item.categoryId)[0];
+
+        if(!existing){
+            cats.push({
+                id:    item.categoryId,
+                name:  item.category,
+                items: [ item.name ]
+            });
+        }
+        else{
+            existing.items.push(item.name);
+        }
+    });
+
+    return cats;
+}
+
 async function getItem(id){
     try{
         const res = await axios({
@@ -125,17 +149,19 @@ async function getBookings(month, year, page=1, bookings=[]){
         });
 
         const newBookings = Object.keys(res.data['booking/index'])
-            .map(key => res.data['booking/index'][key]);
+            .map(key => res.data['booking/index'][key])
+            .map(b => new Booking(b));
 
         if(!newBookings.length) return bookings;
 
-        const firstCreatedDate = new Date(newBookings[0].created_date * 1000);
+        // Check if the first recently fetched booking's created month is greater
+        // than the requested month. If so, stop recursing and filter out any bookings
+        // that were created in months after the requested month
+        const firstCreatedDate = newBookings[0].created;;
         if(firstCreatedDate.getMonth() + 1 > month){
             bookings = [...bookings, ...newBookings];
             return bookings.filter(booking => {
-                const createdMonth = (new Date(booking.created_date * 1000)).getMonth() + 1;
-
-                return createdMonth > month ? false : true;
+                return booking.created.getMonth() + 1 > month ? false : true;
             });
         }
 
@@ -147,7 +173,17 @@ async function getBookings(month, year, page=1, bookings=[]){
 
         return bookings;
     }
-    catch(e){ throw e }
+    catch(e){
+        console.log(`Error fetching bookings for month ${ month }/${ year }, page ${ page }`);
+    }
+}
+
+async function getBookingsWithDetails(month, year){
+    const bookings = await getBookings(month, year);
+
+    const details = bookings.map(async booking => await getBooking(booking.id));
+
+    return Promise.all(details);
 }
 
 async function getBooking(id){
@@ -158,9 +194,68 @@ async function getBooking(id){
             responseType: 'json'
         });
 
-        return res.data;
+        const detail = res.data.booking;
+
+        return new BookingDetail(detail);
     }
-    catch(e){ throw e }
+    catch(e){
+        console.log(`Failed to fetch booking "${ id }"`);
+    }
+}
+
+async function getSettlementTransactions(month, year){
+
+    let details = await getBookingsWithDetails(month, year);
+
+    // Create a map of category IDs to category names
+    const categories  = await getCategories(),
+          categoryMap = categories.reduce((map, cat) => {
+              map[cat.id] = cat.name;
+              return map;
+          }, {});
+
+    const allTransactions = [];
+
+    // Loop over each booking, fetch it's details, and collect it's transactions
+    details.forEach(detail => {
+        let transactions = detail.transactions,
+            items        = detail.items;
+
+        // Create a unique set of items and categories for this booking
+        const bookedItems      = new Set(),
+              bookedCategories = new Set();
+        items.forEach(item => {
+            bookedItems.add(item.name);
+            bookedCategories.add(categoryMap[item.categoryId]);
+        });
+
+        transactions.forEach(transaction => {
+            // FIlter out non-stripe transaction
+            if(transaction.gateway.toLowerCase() !== 'stripe') return;
+
+            transaction = {
+                id:             transaction.id,
+                status:         transaction.status,
+                date:           transaction.date,
+                amount:         Number(transaction.amount),
+                gateway:        transaction.gateway,
+                bookingId:      detail.bookingId,
+                bookingCode:    detail.id,
+                bookingStatus:  detail.statusId,
+                bookingSummary: detail.summary,
+
+                items: [...bookedItems],
+                multipleItems: bookedItems.size > 1,
+
+                categories: [...bookedCategories],
+                multipleCategories: bookedCategories.size > 1
+            };
+
+            allTransactions.push(transaction);
+        });
+    });
+
+    return allTransactions;
 }
 
 module.exports = {
@@ -170,5 +265,8 @@ module.exports = {
     getCategories,
     getEvents,
     getBookings,
-    getBooking
+    getBookingsWithDetails,
+    getBooking,
+    getItemsByCategory,
+    getSettlementTransactions
 }
