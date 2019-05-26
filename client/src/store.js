@@ -50,12 +50,13 @@ const store = new Vuex.Store({
                         : transaction.amount;
 
                     transactions.push({
-                        id:        transaction.id,
-                        bookingId: booking.id,
-                        date:      transaction.date,
-                        status:    transaction.status,
-                        amount:    amount.toFixed(2),
-                        gateway:   transaction.gateway
+                        id:          transaction.id,
+                        bookingId:   booking.bookingId,
+                        bookingCode: booking.id,
+                        date:        transaction.date,
+                        status:      transaction.status,
+                        amount:      amount.toFixed(2),
+                        gateway:     transaction.gateway
                     });
                 });
             });
@@ -155,9 +156,9 @@ const store = new Vuex.Store({
     }
 });
 
-store.dispatch('loadBookings');
-store.dispatch('loadItems');
-store.dispatch('loadSettlement');
+// store.dispatch('loadBookings');
+// store.dispatch('loadItems');
+// store.dispatch('loadSettlement');
 
 
 export default store;
