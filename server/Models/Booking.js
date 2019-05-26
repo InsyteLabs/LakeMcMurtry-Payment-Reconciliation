@@ -3,6 +3,7 @@
 const padLeft = require('../lib/pad-left');
 
 function Booking(checkFrontBooking){
+
     this.id       = checkFrontBooking.booking_id;
     this.tid      = checkFrontBooking.tid;
     this.token    = checkFrontBooking.token;
