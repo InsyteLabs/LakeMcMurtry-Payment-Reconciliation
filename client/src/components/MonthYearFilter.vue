@@ -56,10 +56,7 @@ export default {
         }
     },
     created(){
-        this.$emit('filter-change', {
-            month: this.month,
-            year:  this.year
-        });
+        
     }
 }
 </script>
