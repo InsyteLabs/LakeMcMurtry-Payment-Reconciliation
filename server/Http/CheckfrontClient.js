@@ -236,6 +236,7 @@ async function getSettlementTransactions(month, year){
             transaction = {
                 id:             transaction.id,
                 status:         transaction.status,
+                refund:         false,
                 date:           transaction.date,
                 amount:         Number(transaction.amount),
                 gateway:        transaction.gateway,
@@ -250,6 +251,12 @@ async function getSettlementTransactions(month, year){
                 categories: [...bookedCategories],
                 multipleCategories: bookedCategories.size > 1
             };
+
+            if(transaction.status){
+                if(transaction.status.toLowerCase() === 'refund'){
+                    transaction.refund = true;
+                }
+            }
 
             allTransactions.push(transaction);
         });
