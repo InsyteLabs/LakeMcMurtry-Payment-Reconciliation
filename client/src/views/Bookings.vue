@@ -45,6 +45,7 @@
                 <thead>
                     <tr>
                         <th>Booking</th>
+                        <th>Booking Code</th>
                         <th>Transaction ID</th>
                         <th>Transaction Date</th>
                         <th>Status</th>
@@ -57,6 +58,7 @@
                         <td>
                             <router-link :to="'/bookings/' + transaction.bookingId">{{ transaction.bookingId }}</router-link>
                         </td>
+                        <td>{{ transaction.bookingCode }}</td>
                         <td>{{ transaction.id }}</td>
                         <td>{{ transaction.date }}</td>
                         <td>{{ transaction.status }}</td>
