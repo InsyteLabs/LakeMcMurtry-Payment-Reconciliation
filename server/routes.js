@@ -1,6 +1,8 @@
 'use strict';
 
-const router = require('express').Router();
+const router = require('express').Router(),
+      conf   = require('./conf'),
+      stripe = require('stripe')(conf.stripe.apiKey);
 
 const checkfrontClient = require('./Http/CheckfrontClient'),
       Booking          = require('./Models/Booking'),
@@ -154,5 +156,57 @@ router.get('/categories', async (req, res, next) => {
 
     return res.json(categories);
 });
+
+router.get('/stripe-transactions', async (req, res, next) => {
+    const { start, end  } = getMonthTimestamps(req.query);
+
+    try{
+        const charges = await getStripeTransactions(start, end);
+
+        return res.json(charges);
+    }
+    catch(e){
+        return res.json(e);
+    }
+});
+
+function getStripeTransactions(start, end){
+    return new Promise((resolve, reject) => {
+        stripe.charges.list({ created: { gte: start, lte: end } }, (err, charges) => {
+            if(err) return reject(err);
+
+            resolve(charges);
+        });
+    });
+}
+
+function getMonthTimestamps(obj){
+    let { month, year } = obj;
+
+    if(!(month && year)){
+        let date = new Date();
+
+        month = date.getMonth() + 1;
+        year  = date.getFullYear();
+    }
+
+    let date  = new Date(year, month - 1, 1),
+        start = new Date(date.getFullYear(), date.getMonth(), 1),
+        end   = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+    start.setHours(0);
+    start.setMinutes(0);
+    start.setSeconds(0);
+    start.setMilliseconds(0);
+    start = Math.floor(start.getTime() / 1000);
+
+    end.setHours(23);
+    end.setMinutes(59);
+    end.setSeconds(59);
+    end.setMilliseconds(999);
+    end = Math.floor(end.getTime() / 1000);
+
+    return { start, end }
+}
 
 module.exports = router;
