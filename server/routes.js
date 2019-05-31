@@ -5,9 +5,12 @@ const router = require('express').Router(),
       stripe = require('stripe')(conf.stripe.apiKey);
 
 const checkfrontClient = require('./Http/CheckfrontClient'),
+      stripeClient     = require('./Http/StripeClient'),
       Booking          = require('./Models/Booking'),
       BookingDetail    = require('./Models/BookingDetail'),
       Item             = require('./Models/Item');
+
+const getMonthStartEndTimestamps = require('./lib/get-month-start-end-timestamps');
 
 router.get('/bookings', async (req, res, next) => {
     let { month, year } = req.query;
@@ -158,55 +161,49 @@ router.get('/categories', async (req, res, next) => {
 });
 
 router.get('/stripe-transactions', async (req, res, next) => {
-    const { start, end  } = getMonthTimestamps(req.query);
+    const { start, end  } = getMonthStartEndTimestamps(req.query);
 
     try{
-        const charges = await getStripeTransactions(start, end);
+        const charges = await stripeClient.getCharges(start, end),
+              refunds = await stripeClient.getRefunds(start, end);
 
-        return res.json(charges);
+        const data = {
+            totalCharges: 0,
+            totalChargedAmount: 0,
+            totalFees: 0,
+            totalRefunds: 0,
+            totalRefundAmount: 0,
+            gross: 0,
+            charges,
+            refunds
+        }
+
+        charges.forEach(charge => {
+            data.totalCharges++;
+            data.totalChargedAmount += charge.amount;
+            data.totalFees          += charge.fee;
+            data.gross              += charge.amount;
+        });
+
+        refunds.forEach(refund => {
+            data.totalRefunds++;
+            data.totalRefundAmount += refund.amount;
+            data.gross             -= refund.amount;
+        });
+
+        data.net = data.gross - data.totalFees;
+
+        data.totalChargedAmount = parseFloat(data.totalChargedAmount.toFixed(2));
+        data.totalFees          = parseFloat(data.totalFees.toFixed(2));
+        data.totalRefundAmount  = parseFloat(data.totalRefundAmount.toFixed(2));
+        data.gross              = parseFloat(data.gross.toFixed(2));
+        data.net                = parseFloat(data.net.toFixed(2));
+
+        return res.json(data);
     }
     catch(e){
         return res.json(e);
     }
 });
-
-function getStripeTransactions(start, end){
-    return new Promise((resolve, reject) => {
-        stripe.charges.list({ created: { gte: start, lte: end } }, (err, charges) => {
-            if(err) return reject(err);
-
-            resolve(charges);
-        });
-    });
-}
-
-function getMonthTimestamps(obj){
-    let { month, year } = obj;
-
-    if(!(month && year)){
-        let date = new Date();
-
-        month = date.getMonth() + 1;
-        year  = date.getFullYear();
-    }
-
-    let date  = new Date(year, month - 1, 1),
-        start = new Date(date.getFullYear(), date.getMonth(), 1),
-        end   = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-    start.setHours(0);
-    start.setMinutes(0);
-    start.setSeconds(0);
-    start.setMilliseconds(0);
-    start = Math.floor(start.getTime() / 1000);
-
-    end.setHours(23);
-    end.setMinutes(59);
-    end.setSeconds(59);
-    end.setMilliseconds(999);
-    end = Math.floor(end.getTime() / 1000);
-
-    return { start, end }
-}
 
 module.exports = router;
