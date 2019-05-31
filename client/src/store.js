@@ -156,8 +156,8 @@ const store = new Vuex.Store({
     }
 });
 
+store.dispatch('loadItems');
 // store.dispatch('loadBookings');
-// store.dispatch('loadItems');
 // store.dispatch('loadSettlement');
 
 
