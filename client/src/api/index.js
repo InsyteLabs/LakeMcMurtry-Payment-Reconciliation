@@ -30,7 +30,7 @@ const api = {
         return items;
     },
     async getSettlement(month, year){
-        let url = `${ apiPrefix }/settlement`;
+        let url = `${ apiPrefix }/stripe-transactions`;
 
         if(month && year) url += `?month=${ month }&year=${ year }`;
 
