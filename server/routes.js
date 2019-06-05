@@ -45,97 +45,6 @@ router.get('/bookings/:id', async (req, res, next) => {
     return res.json(detail);
 });
 
-router.get('/settlement', async (req, res, next) => {
-
-    const { month, year } = req.query;
-    const settlement = await checkfrontClient.getSettlementTransactions(month, year);
-
-    return res.json(settlement);
-});
-
-router.get('/settlement-alt', async (req, res, next) => {
-    const { month, year } = req.query;
-    const settlement = await checkfrontClient.getSettlementTransactions(month, year);
-
-    const categoryMap = {
-        'East Tent Campsites': 'Tent Camping',
-        'West Tent Campsites': 'Tent Camping',
-
-        'Primitive Campsites': 'Primitive Camping',
-
-        'East RV Campsites': 'RV Camping',
-        'West RV Campsites': 'RV Camping',
-
-        'Annual Membership': 'Annual Memberships',
-        'Day Permit':        'Day Permits',
-
-        'Pavilion Rental': 'Pavilion Rentals'
-    }
-
-    const noCategories       = { category: 'No Categories',       transactions: [] },
-          multipleCategories = { category: 'Multiple Categories', transactions: [] };
-
-    const transactionsByCategory = [ noCategories, multipleCategories ];
-
-    const data = {
-        total: 0,
-        transactionCount: 0,
-        transactionsByCategory: {
-            'No Categories': {
-                total:            0,
-                transactionCount: 0,
-                transactions:     []
-            },
-            'Multiple Categories': {
-                total:            0,
-                transactionCount: 0,
-                transactions:     []
-            }
-        }
-    }
-
-    settlement.forEach(transaction => {
-
-        data.transactionCount++;
-        if(transaction.refund){
-            data.total -= transaction.amount;
-        }
-        else{
-            data.total += transaction.amount;
-        }
-
-        const transactionCategory = transaction.categories[0];
-        let transactionGroup;
-        if(transaction.multipleCategories){
-            transactionGroup = data.transactionsByCategory['Multiple Categories'];
-        }
-        else if(!transaction.categories.length){
-            transactionGroup = data.transactionsByCategory['No Categories'];
-        }
-        else if(data.transactionsByCategory[transactionCategory]){
-            transactionGroup = data.transactionsByCategory[transactionCategory];
-        }
-        else{
-            transactionGroup = data.transactionsByCategory[transactionCategory] = {
-                total: 0,
-                transactionCount: 0,
-                transactions: []
-            }
-        }
-
-        transactionGroup.transactionCount++;
-        if(transaction.refund){
-            transactionGroup.total -= transaction.amount;
-        }
-        else{
-            transactionGroup.total += transaction.amount;
-        }
-        transactionGroup.transactions.push(transaction);
-    });
-
-    return res.json(data);
-});
-
 router.get('/items', async (req, res, next) => {
     let items = await checkfrontClient.getItems();
 
@@ -167,28 +76,64 @@ router.get('/stripe-transactions', async (req, res, next) => {
         const charges = await stripeClient.getCharges(start, end),
               refunds = await stripeClient.getRefunds(start, end);
 
+        const categories  = await checkfrontClient.getCategories(),
+              categoryMap = categories.reduce((map, cat) => {
+                  map[cat.id] = cat.name;
+                  return map;
+              }, {})
+
+        const promises = [];
+
+        const transactions = [...charges, ...refunds];
+
+        transactions.forEach(transaction => {
+            promises.push(new Promise(async (resolve, reject) => {
+                const booking = await checkfrontClient.getBooking(transaction.bookingCode);
+
+                if(!booking){
+                    console.log(`Failed to fetch booking ${ transaction.bookingCode }`);
+                }
+
+                const items      = new Set(),
+                      categories = new Set();
+
+                booking.items.forEach(item => {
+                    items.add(item.name);
+                    categories.add(categoryMap[item.categoryId]);
+                });
+
+                transaction.categories         = Array.from(categories);
+                transaction.multipleCategories = transaction.categories.length > 1;
+                transaction.items              = Array.from(items);
+                transaction.multipleItems      = transaction.items.length > 1;
+
+                resolve();
+            }));
+        });
+
+        await Promise.all(promises);
+
         const data = {
             totalCharges: 0,
             totalChargedAmount: 0,
             totalFees: 0,
             totalRefunds: 0,
             totalRefundAmount: 0,
-            gross: 0,
-            charges,
-            refunds
+            gross: 0
         }
 
-        charges.forEach(charge => {
-            data.totalCharges++;
-            data.totalChargedAmount += charge.amount;
-            data.totalFees          += charge.fee;
-            data.gross              += charge.amount;
-        });
+        transactions.forEach(transaction => {
+            if(transaction.type === 'charge'){
+                data.totalCharges++;
+                data.totalChargedAmount += transaction.amount;
+                data.totalFees          += transaction.fee;
+                data.gross              += transaction.amount;
+                return;
+            }
 
-        refunds.forEach(refund => {
             data.totalRefunds++;
-            data.totalRefundAmount += refund.amount;
-            data.gross             -= refund.amount;
+            data.totalRefundAmount += transaction.amount;
+            data.gross             -= transaction.amount;
         });
 
         data.net = data.gross - data.totalFees;
@@ -199,11 +144,62 @@ router.get('/stripe-transactions', async (req, res, next) => {
         data.gross              = parseFloat(data.gross.toFixed(2));
         data.net                = parseFloat(data.net.toFixed(2));
 
+        const byCategory = mapStripeTransactions(transactions);
+
+        data.transactions = byCategory;
+
         return res.json(data);
     }
     catch(e){
-        return res.json(e);
+        return res.status(500).json({ error: e.message, stack: e.stack });
     }
 });
+
+
+function mapStripeTransactions(transactions){
+    const categoryMap = {
+        'East Tent Campsites': 'Tent Camping',
+        'West Tent Campsites': 'Tent Camping',
+
+        'Primitive Campsites': 'Primitive Camping',
+
+        'East RV Campsites': 'RV Camping',
+        'West RV Campsites': 'RV Camping',
+
+        'Annual Membership': 'Annual Memberships',
+        'Day Permit':        'Day Permits',
+
+        'Pavilion Rental': 'Pavilion Rentals'
+    }
+
+    const transactionsByCategory = {
+        'No Categories': {
+            transactions: []
+        },
+        'Multiple Categories': {
+            transactions: []
+        }
+    }
+
+    for(let i = 0, len = transactions.length; i < len; i++){
+        const transaction = transactions[i],
+              category    = transaction.categories[0];
+
+        if(transaction.multipleCategories){
+            transactionsByCategory['Multiple Categories'].transactions.push(transaction);
+        }
+        else if(transaction.categories.length === 0){
+            transactionsByCategory['No Categories'].transactions.push(transaction);
+        }
+        else if(category in transactionsByCategory){
+            transactionsByCategory[category].transactions.push(transaction);
+        }
+        else{
+            transactionsByCategory[category] = { transactions: [ transaction ] }
+        }
+    }
+
+    return transactionsByCategory;
+}
 
 module.exports = router;
