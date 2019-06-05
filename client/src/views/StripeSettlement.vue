@@ -3,42 +3,86 @@
         <keep-alive>
             <month-year-filter @filter-change="loadSettlement"></month-year-filter>
         </keep-alive>
-        <h1 class="text-center">
-            {{ settlement.length }} Stripe transactions for {{ months[month] }} {{ year }} totaling ${{ total }}
+        <h1 v-if="month && year" class="text-center">
+            Stripe transactions for {{ months[month] }} {{ year }}
         </h1>
 
-        <div v-for="group of groupedTransactions">
-            <h3 class="text-center">{{ group.category }}</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Gateway</th>
-                        <th>Items</th>
-                        <th>Categories</th>
-                        <th>Booking ID</th>
-                        <th>Booking Code</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="transaction of group.transactions">
-                        <td class="no-wrap">{{ formatDate(transaction.date) }}</td>
-                        <td>${{ transaction.amount.toFixed(2) }}</td>
-                        <td>{{ transaction.status }}</td>
-                        <td>{{ transaction.gateway }}</td>
-                        <td>{{ transaction.items.join(', ') }}</td>
-                        <td>{{ transaction.categories.join(', ') }}</td>
-                        <td>
-                            <router-link :to="`/bookings/${ transaction.bookingId }`">
-                                {{ transaction.bookingId }}
-                            </router-link>
-                        </td>
-                        <td>{{ transaction.bookingCode }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div v-if="settlement">
+            <div class="">
+                <h2>Settlement Totals</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Charges</th>
+                            <th>Total Charged Amount</th>
+                            <th>Total Fees</th>
+                            <th>Refunds</th>
+                            <th>Total Refund Amount</th>
+                            <th>Gross</th>
+                            <th>Net</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ settlement.totalCharges }}</td>
+                            <td>{{ currency(settlement.totalChargedAmount) }}</td>
+                            <td>{{ currency(settlement.totalFees) }}</td>
+                            <td>{{ settlement.totalRefunds }}</td>
+                            <td>{{ currency(settlement.totalRefundAmount) }}</td>
+                            <td>{{ currency(settlement.gross) }}</td>
+                            <td>{{ currency(settlement.net) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div v-for="(group, groupName) in settlement.transactions">
+                <div v-if="group.transactions.length > 1">
+                    <h2>{{ groupName }}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Booking</th>
+                                <th>Amount</th>
+                                <th>Fee</th>
+                                <th>Net</th>
+                                <th>Cardholder</th>
+                                <th>Receipt</th>
+                                <th>Category</th>
+                                <th>Items</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="transaction of group.transactions" :class="{ refund: transaction.type === 'refund' }">
+                                <td>{{ formatDate(transaction.transactionDate) }}</td>
+                                <td>{{ transaction.type[0].toUpperCase() + transaction.type.slice(1) }}</td>
+                                <td>{{ transaction.status[0].toUpperCase() + transaction.status.slice(1) }}</td>
+                                <td>
+                                    <router-link :to="'/bookings/' + transaction.bookingId">{{ transaction.bookingCode }}</router-link>
+                                </td>
+                                <td>{{ currency(transaction.amount) }}</td>
+                                <td>{{ currency(transaction.fee) }}</td>
+                                <td>{{ currency(transaction.net) }}</td>
+                                <td>{{ transaction.cardHolderName }}</td>
+                                <td>
+                                    <div v-if="transaction.receiptURL">
+                                        <a :href="transaction.receiptURL" target="_blank" rel="noopener nofollow">View Receipt</a>
+                                    </div>
+                                    <div v-else>
+                                        N/A
+                                    </div>
+                                </td>
+                                <td>{{ transaction.categories.join(', ') }}</td>
+                                <td>{{ transaction.items.join(', ') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -48,7 +92,7 @@
 'use strict';
 
 import MonthYearFilter from '@/components/MonthYearFilter.vue';
-import { formatDate }  from '../utilities';
+import { formatDate, currency }  from '../utilities';
 
 export default {
     name: 'stripe-settlement',
@@ -73,71 +117,7 @@ export default {
         }
     },
     computed: {
-        settlement(){ return this.$store.getters.settlement },
-        total(){
-            const transactions = this.$store.getters.settlement;
-
-            return transactions.reduce((acc, transaction) => {
-                if(transaction.status === 'REFUND'){
-                    console.log('Caught refund');
-                    acc -= transaction.amount;
-                }
-                else{
-                    acc += transaction.amount;
-                }
-
-                return acc;
-            }, 0);
-        },
-        groupedTransactions(){
-            const transactions = this.$store.getters.settlement,
-                  grouped      = [
-                      { category: 'Tent Camping',        transactions: [] },
-                      { category: 'RV Camping',          transactions: [] },
-                      { category: 'Annual Memberships',  transactions: [] },
-                      { category: 'Day Permits',         transactions: [] },
-                      { category: 'Pavilion Rentals',   transactions: [] },
-                      { category: 'Mulitple Categories', transactions: [] }
-                  ];
-
-            const categoryMap = {
-                'East Tent Campsites': 'Tent Camping',
-                'West Tent Campsites': 'Tent Camping',
-
-                'Primitive Campsites': 'Primitive Camping',
-
-                'East RV Campsites': 'RV Camping',
-                'West RV Campsites': 'RV Camping',
-
-                'Annual Membership': 'Annual Memberships',
-                'Day Permit':        'Day Permits',
-
-                'Pavilion Rental': 'Pavilion Rentals'
-            }
-
-            transactions.forEach(transaction => {
-                if(transaction.multipleCategories){
-                    grouped[5].transactions.push(transaction);
-                }
-                const existing = grouped.filter(group => {
-                    let category = categoryMap[transaction.categories[0]];
-
-                    return group.category === category;
-                })[0];
-
-                if(existing){
-                    existing.transactions.push(transaction);
-                }
-                else{
-                    grouped.push({
-                        category:     categoryMap[transaction.categories[0]],
-                        transactions: [ transaction ]
-                    });
-                }
-            });
-
-            return grouped;
-        }
+        settlement(){ return this.$store.getters.settlement }
     },
     methods: {
         loadSettlement(e){
@@ -149,7 +129,11 @@ export default {
             this.$store.commit('removeSettlement');
             this.$store.dispatch('loadSettlement', { month, year });
         },
-        formatDate
+        viewBooking(id){
+
+        },
+        formatDate,
+        currency
     },
     components: { MonthYearFilter }
 }
@@ -157,4 +141,10 @@ export default {
 
 <style lang="sass" scoped>
 
+a
+    color: #2c3e50
+    &:visited
+        color: lighten(#2c3e50, 15%)
+.refund
+    color: red
 </style>
