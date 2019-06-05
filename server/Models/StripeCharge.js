@@ -3,6 +3,7 @@
 function StripeCharge(charge){
     try{
         this.id          = charge.id;
+        this.type        = 'charge';
         this.bookingCode = charge.balance_transaction.description.replace(/-\d+$/, '');
         this.status      = charge.status;
         this.paid        = charge.paid;

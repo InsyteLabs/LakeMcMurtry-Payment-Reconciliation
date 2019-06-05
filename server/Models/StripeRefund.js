@@ -2,6 +2,7 @@
 
 function StripeRefund(refund){
     this.id          = refund.id;
+    this.type        = 'refund';
     this.bookingCode = refund.charge.description.replace(/-\d+$/, '');
     this.status      = refund.status;
 
