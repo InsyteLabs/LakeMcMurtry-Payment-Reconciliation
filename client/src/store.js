@@ -12,7 +12,7 @@ const store = new Vuex.Store({
         bookings:       [],
         bookingDetails: [],
         items:          [],
-        settlement:     []
+        settlement:     {}
     },
     getters: {
         bookings(state){
@@ -89,18 +89,8 @@ const store = new Vuex.Store({
             }
             state.bookingDetails.push(detail);
         },
-        addSettlementTransaction(state, transaction){
-            const existing = this.getters.settlementTransaction(transaction.id);
-
-            if(existing){
-                const idx = this.getters.settlement.indexOf(existing);
-
-                if(idx >= 0){
-                    state.settlement.splice(idx, 1);
-                }
-            }
-
-            state.settlement.push(transaction);
+        addSettlement(state, settlement){
+            state.settlement = settlement;
         },
         addItem(state, item){
             const existing = this.getters.item(item.id);
@@ -119,7 +109,7 @@ const store = new Vuex.Store({
             state.bookingDetails = [];
         },
         removeSettlement(state){
-            state.settlement = [];
+            state.settlement = {};
         }
     },
     actions: {
@@ -150,8 +140,7 @@ const store = new Vuex.Store({
             const settlement = await api.getSettlement(o.month, o.year);
 
             commit('removeSettlement');
-
-            settlement.forEach(transaction => commit('addSettlementTransaction', transaction));
+            commit('addSettlement', settlement);
         }
     }
 });
