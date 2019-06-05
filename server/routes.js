@@ -94,6 +94,8 @@ router.get('/stripe-transactions', async (req, res, next) => {
                     console.log(`Failed to fetch booking ${ transaction.bookingCode }`);
                 }
 
+                transaction.bookingId = booking.bookingId;
+
                 const items      = new Set(),
                       categories = new Set();
 
