@@ -203,68 +203,6 @@ async function getBooking(id){
     }
 }
 
-async function getSettlementTransactions(month, year){
-
-    let details = await getBookingsWithDetails(month, year);
-
-    // Create a map of category IDs to category names
-    const categories  = await getCategories(),
-          categoryMap = categories.reduce((map, cat) => {
-              map[cat.id] = cat.name;
-              return map;
-          }, {});
-
-    const allTransactions = [];
-
-    // Loop over each booking, fetch it's details, and collect it's transactions
-    details.forEach(detail => {
-        let transactions = detail.transactions,
-            items        = detail.items;
-
-        // Create a unique set of items and categories for this booking
-        const bookedItems      = new Set(),
-              bookedCategories = new Set();
-        items.forEach(item => {
-            bookedItems.add(item.name);
-            bookedCategories.add(categoryMap[item.categoryId]);
-        });
-
-        transactions.forEach(transaction => {
-            // FIlter out non-stripe transaction
-            if(transaction.gateway.toLowerCase() !== 'stripe') return;
-
-            transaction = {
-                id:             transaction.id,
-                status:         transaction.status,
-                refund:         false,
-                date:           transaction.date,
-                amount:         Number(transaction.amount),
-                gateway:        transaction.gateway,
-                bookingId:      detail.bookingId,
-                bookingCode:    detail.id,
-                bookingStatus:  detail.statusId,
-                bookingSummary: detail.summary,
-
-                items: [...bookedItems],
-                multipleItems: bookedItems.size > 1,
-
-                categories: [...bookedCategories],
-                multipleCategories: bookedCategories.size > 1
-            };
-
-            if(transaction.status){
-                if(transaction.status.toLowerCase() === 'refund'){
-                    transaction.refund = true;
-                }
-            }
-
-            allTransactions.push(transaction);
-        });
-    });
-
-    return allTransactions;
-}
-
 module.exports = {
     getAccount,
     getItems,
@@ -274,6 +212,5 @@ module.exports = {
     getBookings,
     getBookingsWithDetails,
     getBooking,
-    getItemsByCategory,
-    getSettlementTransactions
+    getItemsByCategory
 }
