@@ -148,6 +148,40 @@ router.get('/stripe-transactions', async (req, res, next) => {
 
         const byCategory = mapStripeTransactions(transactions);
 
+        for(const category in byCategory){
+
+            const group = byCategory[category];
+
+            group.totalCharges       = 0;
+            group.totalChargedAmount = 0;
+            group.totalFees          = 0;
+            group.totalRefunds       = 0;
+            group.totalRefundAmount  = 0;
+            group.gross              = 0;
+            group.net                = 0;
+
+            group.transactions.forEach(transaction => {
+                if(transaction.type === 'charge'){
+                    group.totalCharges++;
+                    group.totalChargedAmount += transaction.amount;
+                    group.totalFees          += transaction.fee;
+                    group.gross              += transaction.amount;
+                    return;
+                }
+                group.totalRefunds++;
+                group.totalRefundAmount += transaction.amount;
+                group.gross             -= transaction.amount;
+            });
+
+            group.net = group.gross - group.totalFees;
+
+            group.totalChargedAmount = parseFloat(group.totalChargedAmount.toFixed(2));
+            group.totalFees          = parseFloat(group.totalFees.toFixed(2));
+            group.totalRefundAmount  = parseFloat(group.totalRefundAmount.toFixed(2));
+            group.gross              = parseFloat(group.gross.toFixed(2));
+            group.net                = parseFloat(group.net.toFixed(2));
+        }
+
         data.transactions = byCategory;
 
         return res.json(data);
@@ -185,7 +219,7 @@ function mapStripeTransactions(transactions){
 
     for(let i = 0, len = transactions.length; i < len; i++){
         const transaction = transactions[i],
-              category    = transaction.categories[0];
+              category    = categoryMap[transaction.categories[0]];
 
         if(transaction.multipleCategories){
             transactionsByCategory['Multiple Categories'].transactions.push(transaction);
