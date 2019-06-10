@@ -34,12 +34,37 @@
                         </tr>
                     </tbody>
                 </table>
+                <hr>
             </div>
 
 
             <div v-for="(group, groupName) in settlement.transactions">
                 <div v-if="group.transactions.length > 1">
                     <h2>{{ groupName }}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Charges</th>
+                                <th>Total Charged Amount</th>
+                                <th>Total Fees</th>
+                                <th>Refunds</th>
+                                <th>Total Refund Amount</th>
+                                <th>Gross</th>
+                                <th>Net</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ group.totalCharges }}</td>
+                                <td>{{ currency(group.totalChargedAmount) }}</td>
+                                <td>{{ currency(group.totalFees) }}</td>
+                                <td>{{ group.totalRefunds }}</td>
+                                <td>{{ currency(group.totalRefundAmount) }}</td>
+                                <td>{{ currency(group.gross) }}</td>
+                                <td>{{ currency(group.net) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <table>
                         <thead>
                             <tr>
@@ -81,6 +106,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <hr>
                 </div>
             </div>
         </div>
