@@ -1,6 +1,6 @@
 'use strict';
 
-const apiPrefix = 'http://localhost:8000';
+const apiPrefix = process.env.VUE_APP_API_PREFIX;
 
 const api = {
     async getBookings(month, year){
