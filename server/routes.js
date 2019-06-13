@@ -219,7 +219,7 @@ function mapStripeTransactions(transactions){
 
     for(let i = 0, len = transactions.length; i < len; i++){
         const transaction = transactions[i],
-              category    = categoryMap[transaction.categories[0]];
+              category    = categoryMap[transaction.categories[0]] || 'Uncategorized';
 
         if(transaction.multipleCategories){
             transactionsByCategory['Multiple Categories'].transactions.push(transaction);
