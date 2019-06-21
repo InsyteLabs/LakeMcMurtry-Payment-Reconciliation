@@ -1,13 +1,13 @@
 <template lang="html">
     <div class="settlement container">
         <keep-alive>
-            <month-year-filter @filter-change="loadSettlement"></month-year-filter>
+            <month-year-filter @filter-change="loadSettlement" @loaded="setDate($event)"></month-year-filter>
         </keep-alive>
         <h1 v-if="month && year" class="text-center">
             Stripe transactions for {{ months[month] }} {{ year }}
         </h1>
 
-        <div v-if="settlement">
+        <div v-if="settlement.transactions">
             <div class="">
                 <h2>Settlement Totals</h2>
                 <table>
@@ -34,6 +34,9 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <button @click="exportCSV" class="bg-green-dark text-yellow-light">Export CSV</button>
+
                 <hr>
             </div>
 
@@ -146,6 +149,11 @@ export default {
         settlement(){ return this.$store.getters.settlement }
     },
     methods: {
+        setDate(e){
+            const [ month, year ] = e;
+            this.month = month;
+            this.year  = year;
+        },
         loadSettlement(e){
             const { month, year } = e;
 
@@ -155,8 +163,56 @@ export default {
             this.$store.commit('removeSettlement');
             this.$store.dispatch('loadSettlement', { month, year });
         },
-        viewBooking(id){
+        exportCSV(){
+            let data = [
+                `Date, Booking Code, Type, Status, Amount, Fee, Net, Category, Categories, Items`
+            ];
 
+            for(let groupName in this.settlement.transactions){
+                const { transactions } = this.settlement.transactions[groupName];
+
+                for(let transaction of transactions){
+                    const {
+                        bookingCode,
+                        transactionDate,
+                        type,
+                        status,
+                        amount,
+                        fee,
+                        net,
+                        categories,
+                        items
+                    } = transaction;
+
+                    data.push([
+                        `"${ formatDate(transactionDate) }"`,
+                        `"${ bookingCode }"`,
+                        `"${ type[0].toUpperCase() }${ type.slice(1) }"`,
+                        `"${ status[0].toUpperCase() }${ status.slice(1) }"`,
+                        `"${ amount || '0.00' }"`,
+                        `"${ fee || 'N/A' }"`,
+                        `"${ net || 'N/A' }"`,
+                        `"${ groupName }"`,
+                        `"${ categories.join(', ').replace(/"/g, '""') }"`,
+                        `"${ items.join(', ').replace(/"/g, '""') }"`
+                    ].join(','));
+                }
+            }
+
+            data = data.join('\n');
+            data = btoa(data);
+
+            const url = `data:text/csv;base64,${ data }`;
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute(
+                'download',
+                `${ this.months[this.month] }-${ this.year }_stripe-settlement.csv`
+            );
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         },
         formatDate,
         currency
